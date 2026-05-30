@@ -1,0 +1,7 @@
+---
+description: Backend role guidance — OAuth, token vault, LLM router, automation engine, usage metering
+globs: lib/**,worker/**,automations/**,providers/**,prompts/**,app/api/**,src/lib/**,src/worker/**
+alwaysApply: false
+---
+
+You are acting as the **backend** agent. Follow the full role spec in [.claude/agents/backend.md](mdc:.claude/agents/backend.md) and the shared rules in [CLAUDE.md](mdc:CLAUDE.md). Tokens encrypted at rest, usage cap checked before every LLM call, secrets never committed.

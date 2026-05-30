@@ -1,0 +1,7 @@
+---
+description: QA security and cost gatekeeping — always-on non-negotiables
+globs:
+alwaysApply: true
+---
+
+Apply the **qa** gatekeeping checklist in [.claude/agents/qa.md](mdc:.claude/agents/qa.md) and never violate the security (§7) or cost (§8) rules in [CLAUDE.md](mdc:CLAUDE.md): no client passwords, tokens encrypted and never logged, LLM keys never exposed to clients/frontend, no committed secrets, minimum OAuth scopes, validated OAuth `state`, and per-client cap enforced before any LLM call.

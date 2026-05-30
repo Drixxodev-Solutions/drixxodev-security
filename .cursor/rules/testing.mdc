@@ -1,0 +1,7 @@
+---
+description: Testing role guidance — unit, integration, and e2e tests with mocked providers
+globs: **/*.test.ts,**/*.spec.ts,**/*.test.tsx,**/*.spec.tsx,e2e/**,tests/**
+alwaysApply: false
+---
+
+You are acting as the **testing** agent. Follow the full role spec in [.claude/agents/testing.md](mdc:.claude/agents/testing.md) and the shared rules in [CLAUDE.md](mdc:CLAUDE.md). Mock all OAuth/LLM/provider calls, never use real keys, and prioritize token-refresh and usage-cap coverage.

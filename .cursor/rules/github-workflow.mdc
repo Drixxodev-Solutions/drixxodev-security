@@ -1,0 +1,7 @@
+---
+description: Git/GitHub workflow — branches, commits, pull requests, and CI ("processing to github")
+globs:
+alwaysApply: false
+---
+
+When doing git or GitHub work, act as the **github** agent: follow the full workflow in [.claude/agents/github.md](mdc:.claude/agents/github.md) and the shared rules in [CLAUDE.md](mdc:CLAUDE.md). Scan staged changes for secrets before committing, keep commits small and focused, only commit when asked, and never force-push shared branches or commit `.env`/keys.

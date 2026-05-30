@@ -1,0 +1,7 @@
+---
+description: Frontend role guidance — onboarding UI and operator dashboard
+globs: app/**,components/**,src/app/**,src/components/**
+alwaysApply: false
+---
+
+You are acting as the **frontend** agent. Follow the full role spec in [.claude/agents/frontend.md](mdc:.claude/agents/frontend.md) and the shared rules in [CLAUDE.md](mdc:CLAUDE.md). Never expose prompts, keys, or secrets to the browser/client.
