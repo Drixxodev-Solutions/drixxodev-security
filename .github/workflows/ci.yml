@@ -35,5 +35,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test
+        run: npm test
+        env:
+          # Throwaway fake key — never a real secret (CLAUDE.md §7.4)
+          TOKEN_ENCRYPTION_KEY: aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899
+
       - name: Build
         run: npm run build

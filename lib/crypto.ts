@@ -68,7 +68,9 @@ export function decrypt(ciphertext: string): string {
   const key = getKey();
   const combined = Buffer.from(ciphertext, "base64");
 
-  if (combined.length < IV_LENGTH + AUTH_TAG_LENGTH + 1) {
+  // Minimum valid size = IV + auth tag (a zero-length plaintext encrypts to
+  // exactly this). Anything shorter is truncated/invalid.
+  if (combined.length < IV_LENGTH + AUTH_TAG_LENGTH) {
     throw new Error("Invalid ciphertext: too short to be a valid encrypted token.");
   }
 
