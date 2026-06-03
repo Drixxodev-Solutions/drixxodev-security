@@ -32,5 +32,12 @@ export default clerkMiddleware((auth, req) => {
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    "/((?!.*\\..*|_next).*)",
+    "/",
+    "/(api|trpc)(.*)",
+    // Clerk auto-proxy path — must be matched so handshake/proxy requests
+    // reach clerkMiddleware (Clerk CLI setup requirement).
+    "/__clerk/(.*)",
+  ],
 };
