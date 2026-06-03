@@ -93,6 +93,9 @@ real triage prompt against a sample email and prints the result + cost.
 | `npm run dev` | Next.js dev server |
 | `npm run build` / `npm run start` | Production build / serve |
 | `npm run worker` | Run the automation poll worker |
+| `npm run doctor` | Preflight: check env + DB + client/automation/connection state for a triage run |
+| `npm run triage:demo` | Run the triage prompt against a sample email (no Gmail/OAuth needed) |
+| `npm run add-automation` | Attach an automation to a client from the CLI |
 | `npm test` / `npm run test:watch` | Vitest |
 | `npm run lint` | ESLint |
 | `npm run db:migrate` / `npm run db:generate` | Prisma migrate (dev) / generate client |

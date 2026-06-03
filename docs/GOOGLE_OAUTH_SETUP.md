@@ -103,6 +103,12 @@ enabled, non-paused clients. You should then see:
 - **Runs never appear** → worker not running, client is paused, automation is
   disabled, or the monthly usage cap is hit (check the client's Usage panel).
 
+## Preflight: `npm run doctor`
+Run this any time the loop isn't producing runs. It reports, with ✓/⚠/✗,
+whether your env vars, database, and each client's connection + automation are
+ready — and what to fix. (It can't see whether `npm run worker` is running, so
+start that too.)
+
 ## Quick LLM-only check (no Gmail needed)
 ```
 npm run triage:demo
