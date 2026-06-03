@@ -20,6 +20,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import PauseToggle from "./PauseToggle";
+import AutomationsSection from "./AutomationsSection";
 import styles from "./detail.module.css";
 
 // ---------------------------------------------------------------------------
@@ -74,6 +75,7 @@ async function getClientDetail(id: string) {
           id: true,
           type: true,
           enabled: true,
+          pollInterval: true,
           runs: {
             select: {
               id: true,
@@ -234,6 +236,17 @@ export default async function ClientDetailPage({ params }: PageProps) {
           )}
         </div>
       </section>
+
+      {/* Automations */}
+      <AutomationsSection
+        clientId={client.id}
+        automations={client.automations.map((a) => ({
+          id: a.id,
+          type: a.type,
+          enabled: a.enabled,
+          pollInterval: a.pollInterval,
+        }))}
+      />
 
       {/* Recent runs */}
       <section className={styles.section}>

@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "worker": "tsx worker/index.ts",
+    "add-automation": "tsx scripts/add-automation.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
