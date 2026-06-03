@@ -1,0 +1,29 @@
+# Local development database.
+# Matches DATABASE_URL in .env: postgresql://user:password@localhost:5432/drixxodev
+# Production uses managed Postgres (see DEPLOYMENT.md) — this file is dev-only.
+#
+#   docker compose up -d        # start Postgres in the background
+#   npm run db:migrate          # create + apply the schema
+#   docker compose down         # stop (data is preserved in the named volume)
+#   docker compose down -v      # stop AND wipe the database
+services:
+  db:
+    image: postgres:16
+    container_name: drixxodev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: drixxodev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d drixxodev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
