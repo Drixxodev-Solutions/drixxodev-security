@@ -125,15 +125,19 @@ model Run {
 
 // UsageCounter — per client per month; enforces cost caps (§6.5, §8.2).
 model UsageCounter {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   clientId      String
-  month         String // "YYYY-MM" e.g. "2026-05"
-  callsUsed     Int      @default(0)
-  callsIncluded Int      @default(500) // monthly cap; overage pauses or bills (§8.2)
-  costUsd       Float    @default(0.0)
-  capUsd        Float    @default(10.0) // hard dollar cap before pausing
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  month         String    // "YYYY-MM" e.g. "2026-05"
+  callsUsed     Int       @default(0)
+  callsIncluded Int       @default(500) // monthly cap; overage pauses or bills (§8.2)
+  costUsd       Float     @default(0.0)
+  capUsd        Float     @default(10.0) // hard dollar cap before pausing
+  // M3: idempotency timestamps so alerts and auto-pause fire at most once per month.
+  // Nullable so existing rows are backward-compatible without a migration.
+  alerted80At         DateTime? // set when 80% alert is first sent this month (§6.5)
+  pausedForOverageAt  DateTime? // set when client is auto-paused for overage this month (§6.5)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
