@@ -77,9 +77,14 @@ npm run worker                  # in a second terminal: the automation poll loop
 ```
 
 You'll need at minimum a Postgres `DATABASE_URL`, a `TOKEN_ENCRYPTION_KEY`, an
-`ANTHROPIC_API_KEY`, Google OAuth credentials, and Clerk keys. See
-[`DEPLOYMENT.md`](./DEPLOYMENT.md) for the complete setup, OAuth app registration, and a
-go-live checklist.
+`ANTHROPIC_API_KEY`, Google OAuth credentials, and Clerk keys. For connecting a
+real Gmail locally step by step, see
+[`docs/GOOGLE_OAUTH_SETUP.md`](./docs/GOOGLE_OAUTH_SETUP.md); see
+[`DEPLOYMENT.md`](./DEPLOYMENT.md) for the complete production setup, OAuth app
+registration, and a go-live checklist.
+
+Quickest sanity check (no Gmail/OAuth needed): `npm run triage:demo` runs the
+real triage prompt against a sample email and prints the result + cost.
 
 ## Scripts
 
