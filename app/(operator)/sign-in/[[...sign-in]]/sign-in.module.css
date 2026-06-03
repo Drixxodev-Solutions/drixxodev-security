@@ -1,0 +1,12 @@
+/*
+ * Sign-in page — centers the Clerk widget.
+ */
+
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 52px);
+  background: #f5f5f5;
+  padding: 2rem;
+}

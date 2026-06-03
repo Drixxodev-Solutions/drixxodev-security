@@ -1,0 +1,231 @@
+/*
+ * Client detail page styles.
+ * Inherits the dashboard aesthetic — clean, scannable.
+ */
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #1a56db;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Client header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.clientName {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 0.25rem;
+}
+
+.clientMeta {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* ── Section cards ── */
+.section {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 2px 16px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+  padding: 0.75rem 1.25rem;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e5e5;
+  margin: 0;
+}
+
+.sectionBody {
+  padding: 1rem 1.25rem;
+}
+
+/* ── Connections grid ── */
+.connGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.connCard {
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.connCardActive {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.connCardExpired {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #92400e;
+}
+
+.connCardRevoked {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* ── Usage stats ── */
+.statsRow {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.statOver {
+  color: #b91c1c;
+}
+
+/* ── Runs table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.table td {
+  padding: 0.75rem 0.85rem;
+  font-size: 0.85rem;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+  max-width: 280px;
+  word-break: break-word;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Run status chips ── */
+.runStatus {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.runSucceeded { background: #ecfdf5; color: #065f46; }
+.runFailed    { background: #fef2f2; color: #991b1b; }
+.runRunning   { background: #eff6ff; color: #1e40af; }
+.runPending   { background: #f5f5f5; color: #555; }
+
+/* ── Pause toggle ── */
+.togglePause {
+  padding: 0.45rem 1.1rem;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #92400e;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.togglePause:hover:not(:disabled) {
+  background: #fed7aa;
+}
+
+.toggleResume {
+  padding: 0.45rem 1.1rem;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.toggleResume:hover:not(:disabled) {
+  background: #a7f3d0;
+}
+
+.togglePause:disabled,
+.toggleResume:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggleError {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #991b1b;
+}
+
+.empty {
+  font-size: 0.88rem;
+  color: #aaa;
+  padding: 0.5rem 0;
+}
