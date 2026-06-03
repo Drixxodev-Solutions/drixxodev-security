@@ -1,27 +1,32 @@
 /**
- * app/page.tsx — Root page (M0 stub).
+ * app/page.tsx — Public root landing.
  *
- * Placeholder page for the M0 skeleton. Real onboarding UI comes in M4.
- * No internal details (prompts, API keys, automation logic) are shown here — §2.
+ * The only public, unauthenticated face of the platform. It is the doorway
+ * into the operator portal — it links to /dashboard, which the Clerk
+ * middleware redirects to sign-in for unauthenticated visitors.
+ *
+ * This page is a plain server component: the root layout has NO ClerkProvider
+ * (it is scoped to the (operator) route group), so nothing here may use Clerk
+ * hooks or components. No internal details (prompts, keys, how-it-works) are
+ * exposed here — §2 core principle, §7 security rules.
  */
+
+import Link from "next/link";
+import styles from "./home.module.css";
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        fontFamily: "system-ui, sans-serif",
-        color: "#111",
-      }}
-    >
-      <h1>Platform is running.</h1>
-      <p style={{ color: "#555" }}>
-        Onboarding and dashboard are coming soon.
-      </p>
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <p className={styles.brand}>Drixxodev</p>
+        <h1 className={styles.title}>Managed automation platform</h1>
+        <p className={styles.subtitle}>
+          AI-powered automations, run and monitored on your behalf.
+        </p>
+        <Link href="/dashboard" className={styles.cta}>
+          Open operator dashboard
+        </Link>
+      </div>
     </main>
   );
 }

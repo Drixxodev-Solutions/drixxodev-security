@@ -101,13 +101,26 @@ export default async function DashboardPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.pageTitle}>Clients</h1>
-      <p className={styles.pageSubtitle}>
-        {clients.length} client{clients.length !== 1 ? "s" : ""} total
-      </p>
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>Clients</h1>
+          <p className={styles.pageSubtitle}>
+            {clients.length} client{clients.length !== 1 ? "s" : ""} total
+          </p>
+        </div>
+        <Link href="/dashboard/clients/new" className={styles.newClientButton}>
+          + New client
+        </Link>
+      </div>
 
       {clients.length === 0 ? (
-        <div className={styles.empty}>No clients yet.</div>
+        <div className={styles.empty}>
+          No clients yet.{" "}
+          <Link href="/dashboard/clients/new" className={styles.emptyLink}>
+            Create your first client
+          </Link>
+          .
+        </div>
       ) : (
         <table className={styles.table}>
           <thead>

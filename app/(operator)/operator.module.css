@@ -14,12 +14,37 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .appName {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #111;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.navLink {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.navLink:hover {
+  color: #1a56db;
 }
 
 .main {

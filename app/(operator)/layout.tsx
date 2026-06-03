@@ -16,6 +16,7 @@
  * Clerk frontend API instance).
  */
 
+import Link from "next/link";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import styles from "./operator.module.css";
 
@@ -33,7 +34,19 @@ export default function OperatorLayout({
       <html lang="en">
         <body>
           <header className={styles.header}>
-            <span className={styles.appName}>Drixxodev</span>
+            <div className={styles.headerLeft}>
+              <Link href="/dashboard" className={styles.appName}>
+                Drixxodev
+              </Link>
+              <nav className={styles.nav}>
+                <Link href="/dashboard" className={styles.navLink}>
+                  Clients
+                </Link>
+                <Link href="/dashboard/clients/new" className={styles.navLink}>
+                  New client
+                </Link>
+              </nav>
+            </div>
             <UserButton afterSignOutUrl="/sign-in" />
           </header>
           <main className={styles.main}>{children}</main>
