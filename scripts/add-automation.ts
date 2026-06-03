@@ -16,6 +16,7 @@
  * Non-sensitive only — never touches tokens, keys, or prompts (§7).
  */
 
+import "./load-env"; // load .env before Prisma reads DATABASE_URL
 import { prisma } from "@/lib/db";
 import { AutomationType } from "@prisma/client";
 import {

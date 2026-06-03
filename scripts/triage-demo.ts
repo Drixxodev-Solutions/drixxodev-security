@@ -19,6 +19,7 @@
  * platform's LLM layer (§7).
  */
 
+import "./load-env"; // load .env before anything reads process.env
 import * as fs from "fs";
 import * as path from "path";
 import { runLLM } from "@/lib/llm";
