@@ -1,5 +1,5 @@
 /**
- * worker/index.ts — Long-running automation poll loop (§6.4, M2)
+ * worker/index.ts — Long-running automation poll loop (§6.4, M3)
  *
  * This is a separate Node process (NOT serverless — §4). Run with:
  *   npm run worker
@@ -10,6 +10,8 @@
  *   - For each automation whose pollInterval has elapsed, run poll() → process()
  *   - Resilient: one automation/client failing must NOT crash the loop
  *   - Graceful shutdown on SIGINT / SIGTERM
+ *   - M3: daily spend alert — once per UTC day, sum Run.costUsd for today and
+ *     alert the operator if it exceeds DAILY_SPEND_ALERT_USD (default $25).
  *
  * Scheduling: simple in-process map tracking lastRunAt per automation ID.
  * Webhooks / cron-based scheduling are M4 concerns.
@@ -22,6 +24,7 @@ import { prisma } from "@/lib/db";
 import { poll, processItem } from "@/automations/email_triage/index";
 import type { EmailTriageConfig } from "@/automations/email_triage/index";
 import type { Client } from "@prisma/client";
+import { notifyOperator } from "@/lib/alerts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -30,12 +33,29 @@ import type { Client } from "@prisma/client";
 /** How often (ms) the outer loop ticks. Keep short so poll intervals are honoured. */
 const TICK_INTERVAL_MS = 30_000; // 30 seconds
 
+/**
+ * Daily operator spend alert threshold (USD).
+ * Read from DAILY_SPEND_ALERT_USD env var; defaults to $25 if not set.
+ * This is an operator-level alert, not per-client. (§6.5)
+ */
+const DAILY_SPEND_ALERT_USD = parseFloat(
+  process.env.DAILY_SPEND_ALERT_USD ?? "25"
+);
+
 // ---------------------------------------------------------------------------
 // In-process scheduler state
 // ---------------------------------------------------------------------------
 
 /** Map from automationId → timestamp of last successful poll start */
 const lastRunAt = new Map<string, number>();
+
+/**
+ * In-memory dedup for the daily spend alert.
+ * Stores the UTC date string ("YYYY-MM-DD") for which an alert has already
+ * been sent this process lifetime. Resets on worker restart — acceptable for
+ * a long-running process. At most one alert per UTC day per worker process.
+ */
+let dailySpendAlertSentForDate: string | null = null;
 
 function shouldRun(automationId: string, pollIntervalSeconds: number): boolean {
   const last = lastRunAt.get(automationId) ?? 0;
@@ -62,11 +82,73 @@ process.on("SIGINT", () => handleShutdown("SIGINT"));
 process.on("SIGTERM", () => handleShutdown("SIGTERM"));
 
 // ---------------------------------------------------------------------------
+// Daily spend alert (§6.5, M3)
+// ---------------------------------------------------------------------------
+
+/**
+ * checkDailySpend — called once per tick; deduped to fire at most once per
+ * UTC day (per worker process lifetime).
+ *
+ * Sums Run.costUsd for all runs started today (UTC). If the total exceeds
+ * DAILY_SPEND_ALERT_USD, notifies the operator. The dedup flag resets on
+ * worker restart — acceptable since the worker is a long-running process.
+ *
+ * Non-fatal: if the DB query fails the error is logged and the tick continues.
+ */
+async function checkDailySpend(): Promise<void> {
+  const todayUtc = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+  // Already alerted for today — skip
+  if (dailySpendAlertSentForDate === todayUtc) {
+    return;
+  }
+
+  try {
+    const dayStart = new Date(`${todayUtc}T00:00:00.000Z`);
+
+    // Sum costUsd for all runs started on or after today 00:00 UTC
+    const result = await prisma.run.aggregate({
+      _sum: { costUsd: true },
+      where: { startedAt: { gte: dayStart } },
+    });
+
+    const totalCost = result._sum.costUsd ?? 0;
+
+    if (totalCost >= DAILY_SPEND_ALERT_USD) {
+      // Stamp the dedup flag BEFORE notifying so a slow notification path
+      // doesn't cause duplicates if this function is re-entered
+      dailySpendAlertSentForDate = todayUtc;
+
+      notifyOperator({
+        type: "daily_spend",
+        message:
+          `Daily LLM spend across all clients has reached $${totalCost.toFixed(4)}, ` +
+          `exceeding the $${DAILY_SPEND_ALERT_USD.toFixed(2)} threshold.`,
+        details: {
+          date: todayUtc,
+          totalCostUsd: totalCost,
+          thresholdUsd: DAILY_SPEND_ALERT_USD,
+        },
+      });
+    }
+  } catch (err) {
+    // Non-fatal — a missed daily alert is not worth crashing the tick
+    console.error(
+      "[worker] checkDailySpend: failed to query daily spend: " +
+        (err instanceof Error ? err.message : String(err))
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Core tick
 // ---------------------------------------------------------------------------
 
 async function tick(): Promise<void> {
   if (shuttingDown) return;
+
+  // Daily spend alert check (§6.5, M3) — runs once per tick, deduped per UTC day
+  await checkDailySpend();
 
   // Load all enabled email_triage automations along with their client
   let automations: Array<{
@@ -157,7 +239,7 @@ async function runAutomation(
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  console.log("[worker] starting automation poll worker (M2)");
+  console.log("[worker] starting automation poll worker (M3)");
   console.log(`[worker] tick interval: ${TICK_INTERVAL_MS / 1000}s`);
 
   // Run an initial tick immediately, then on interval
