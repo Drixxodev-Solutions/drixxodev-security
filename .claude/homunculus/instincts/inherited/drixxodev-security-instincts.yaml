@@ -1,0 +1,473 @@
+# Instincts generated from https://github.com/drixxodev/drixxodev-security
+# Generated: 2026-06-03T16:11:17.945Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: drixxodev-security-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Commit Length
+
+## Action
+
+Write moderate-length commit messages (~50 characters)
+
+## Evidence
+
+- Average commit message length: 50 chars
+- Based on 1 commits
+
+---
+id: drixxodev-security-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: drixxodev-security-import-alias
+trigger: "when importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Import Alias
+
+## Action
+
+Use path aliases (@/, ~/) instead of relative imports
+
+## Evidence
+
+- Import analysis shows alias pattern
+- Example: import { x } from '@/lib/x'
+
+---
+id: drixxodev-security-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Export Style
+
+## Action
+
+Prefer mixed exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: mixed
+
+---
+id: drixxodev-security-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: drixxodev-security-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.test.ts
+
+---
+id: drixxodev-security-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: drixxodev-security-test-mocking
+trigger: "when mocking dependencies in tests"
+confidence: 0.75
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Test Mocking
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Mocking pattern detected: vi.mock
+- Consistent across test files
+
+---
+id: drixxodev-security-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Test Types
+
+## Action
+
+Write unit, integration tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration
+- Coverage config: yes
+
+---
+id: drixxodev-security-instinct-file-naming
+trigger: "When creating a new file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct File Naming
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.files
+
+---
+id: drixxodev-security-instinct-function-naming
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Function Naming
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: drixxodev-security-instinct-class-naming
+trigger: "When defining a class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Class Naming
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: drixxodev-security-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Constant Naming
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: drixxodev-security-instinct-import-alias
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Import Alias
+
+## Action
+
+Use alias import style
+
+## Evidence
+
+- Pattern in importStyle
+
+---
+id: drixxodev-security-instinct-export-mixed
+trigger: "When exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Export Mixed
+
+## Action
+
+Use both default and named exports as appropriate
+
+## Evidence
+
+- Pattern in exportStyle
+
+---
+id: drixxodev-security-instinct-test-location
+trigger: "When adding new tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Test Location
+
+## Action
+
+Place test files in the separate 'tests' folder
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+
+---
+id: drixxodev-security-instinct-test-naming
+trigger: "When naming a test file"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Test Naming
+
+## Action
+
+Use the '*.test.ts' file pattern
+
+## Evidence
+
+- Pattern in testing.filePattern
+
+---
+id: drixxodev-security-instinct-test-framework
+trigger: "When writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Test Framework
+
+## Action
+
+Use the Vitest testing framework
+
+## Evidence
+
+- Pattern in testing.framework
+
+---
+id: drixxodev-security-instinct-test-types
+trigger: "When designing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Test Types
+
+## Action
+
+Include both unit and integration tests
+
+## Evidence
+
+- Pattern in testing.testTypes
+
+---
+id: drixxodev-security-instinct-mocking
+trigger: "When mocking dependencies in tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Mocking
+
+## Action
+
+Use 'vi.mock' for mocking
+
+## Evidence
+
+- Pattern in testing.mockingStyle
+
+---
+id: drixxodev-security-instinct-coverage
+trigger: "When configuring tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Coverage
+
+## Action
+
+Enable and configure code coverage
+
+## Evidence
+
+- Pattern in testing.coverageConfig
+
+---
+id: drixxodev-security-instinct-commit-prefix
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Commit Prefix
+
+## Action
+
+Prefix the message with 'M4:'
+
+## Evidence
+
+- Seen in commit examples
+- Pattern in commits.prefixes
+
+---
+id: drixxodev-security-instinct-commit-length
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Commit Length
+
+## Action
+
+Keep the message concise, around 50 characters
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: drixxodev-security-instinct-commit-format
+trigger: "When describing a commit"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: drixxodev/drixxodev-security
+---
+
+# Drixxodev Security Instinct Commit Format
+
+## Action
+
+Use freeform text after the prefix
+
+## Evidence
+
+- Pattern in commits.type
+- Seen in commit examples
+
