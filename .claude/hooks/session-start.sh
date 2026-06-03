@@ -60,21 +60,80 @@ if ! su -s /bin/bash postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE da
   su -s /bin/bash postgres -c "createdb -O '${DB_USER}' '${DB_NAME}'"
 fi
 
-# Create .env once from the example; never clobber an existing one (may hold real keys).
+# Seed .env from the example on first run (kept thereafter), then reconcile the
+# managed keys against the environment below.
 if [ ! -f .env ]; then
   echo "[session-start] creating .env from .env.example..."
   cp .env.example .env
-  TOKEN_KEY="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
-  # Replace the placeholder lines with working local values.
-  node - "$DATABASE_URL" "$TOKEN_KEY" <<'NODE'
+fi
+
+# Reconcile .env with the container environment every session.
+#
+# The web environment's configured env vars are the single source of truth for
+# secrets (§7.4). Precedence per managed key:
+#   1. value from the environment (operator-configured) — always wins
+#   2. an existing real value already in .env (e.g. operator-pasted) — preserved
+#   3. otherwise a safe default:
+#        - DATABASE_URL          -> the local cluster we just provisioned
+#        - TOKEN_ENCRYPTION_KEY  -> freshly generated 32-byte key
+#        - APP_BASE_URL          -> http://localhost:3000
+#        - Clerk/LLM/OAuth keys  -> BLANK (never the example placeholder)
+#
+# Blanking unset keys matters: the literal pk_test_.../sk_test_... placeholders
+# make @clerk/nextjs throw at boot. Empty instead makes Clerk fall back to its
+# keyless dev mode, so /dashboard reaches a working sign-in instead of crashing.
+echo "[session-start] reconciling .env with environment..."
+node - "$DATABASE_URL" <<'NODE'
 const fs = require('fs');
-const [databaseUrl, tokenKey] = process.argv.slice(2);
+const crypto = require('crypto');
+const [databaseUrl] = process.argv.slice(2);
+
+const parse = (s) => Object.fromEntries(
+  s.split('\n')
+    .filter((l) => /^[A-Z0-9_]+=/.test(l))
+    .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)])
+);
+const placeholders = parse(fs.readFileSync('.env.example', 'utf8'));
 let env = fs.readFileSync('.env', 'utf8');
-env = env.replace(/^DATABASE_URL=.*$/m, `DATABASE_URL=${databaseUrl}`);
-env = env.replace(/^TOKEN_ENCRYPTION_KEY=.*$/m, `TOKEN_ENCRYPTION_KEY=${tokenKey}`);
+
+// A current .env value is "real" only if it's non-empty and not the example placeholder.
+const real = (name, val) => val && val.trim() && val !== placeholders[name];
+const current = (name) => {
+  const m = env.match(new RegExp(`^${name}=(.*)$`, 'm'));
+  return m ? m[1] : undefined;
+};
+const setVar = (name, value) => {
+  const line = `${name}=${value}`;
+  const re = new RegExp(`^${name}=.*$`, 'm');
+  env = re.test(env) ? env.replace(re, line) : env + (env.endsWith('\n') ? '' : '\n') + line + '\n';
+};
+// env var -> else existing real value -> else fallback
+const reconcile = (name, fallback) => {
+  const fromEnv = process.env[name];
+  if (fromEnv && fromEnv.trim()) return setVar(name, fromEnv);
+  const cur = current(name);
+  if (real(name, cur)) return; // preserve operator-pasted value
+  setVar(name, fallback);
+};
+
+// Local-cluster values we provision ourselves.
+setVar('DATABASE_URL', databaseUrl);
+reconcile('TOKEN_ENCRYPTION_KEY', crypto.randomBytes(32).toString('hex'));
+reconcile('APP_BASE_URL', 'http://localhost:3000');
+
+// Secrets/credentials: env value, else preserved real value, else BLANK.
+for (const name of [
+  'ANTHROPIC_API_KEY', 'OPENAI_API_KEY',
+  'GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET',
+  'SLACK_OAUTH_CLIENT_ID', 'SLACK_OAUTH_CLIENT_SECRET',
+  'OPERATOR_ALERT_EMAIL',
+  'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY',
+]) {
+  reconcile(name, '');
+}
+
 fs.writeFileSync('.env', env);
 NODE
-fi
 
 # Expose DB connection + token key to the agent's shell (Prisma CLI, ad-hoc scripts).
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
