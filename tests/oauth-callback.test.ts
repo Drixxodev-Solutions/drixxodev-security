@@ -27,6 +27,26 @@ const mockConnectionUpsert = vi.fn();
 
 vi.mock("@/providers/gmail", () => ({
   exchangeCode: (...args: unknown[]) => mockExchangeCode(...args),
+  // GMAIL_SCOPES is imported by providers/registry.ts — must be present in the mock.
+  GMAIL_SCOPES: ["openid", "email", "https://www.googleapis.com/auth/gmail.modify"],
+  // createAuthorizationURL is imported by providers/registry.ts for the connect route.
+  createAuthorizationURL: () => ({
+    url: new URL("https://accounts.google.com/"),
+    state: "test-state",
+    codeVerifier: "test-verifier",
+  }),
+  refreshAccessToken: vi.fn(),
+}));
+
+// providers/slack is imported transitively via providers/registry.ts.
+// We stub it here to prevent it from requiring real env vars at import time.
+vi.mock("@/providers/slack", () => ({
+  SLACK_SCOPES: ["chat:write"],
+  createAuthorizationURL: () => ({
+    url: new URL("https://slack.com/"),
+    state: "test-slack-state",
+  }),
+  exchangeCode: vi.fn(),
 }));
 
 vi.mock("@/lib/crypto", () => ({

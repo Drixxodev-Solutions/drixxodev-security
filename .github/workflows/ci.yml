@@ -43,3 +43,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/ci?schema=public
+          # Placeholder Clerk keys — valid format but not real credentials (§7.4).
+          # NEXT_PUBLIC_ key is safe to expose; it identifies the Clerk frontend
+          # API instance and is not a secret.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+          CLERK_SECRET_KEY: sk_test_placeholderplaceholderplaceholder

@@ -1,12 +1,16 @@
 /**
- * app/oauth/connect/[provider]/route.ts — start an OAuth connect flow (§6.1, M1).
+ * app/oauth/connect/[provider]/route.ts — start an OAuth connect flow (§6.1, M4).
  *
- * GET /oauth/connect/gmail?clientId=<id>
+ * GET /oauth/connect/[provider]?clientId=<id>
  *
- * Generates the provider authorization URL and persists the CSRF `state` and
- * PKCE `codeVerifier` server-side as httpOnly cookies, then 302-redirects the
- * client's browser to the provider consent screen. The browser never sees or
- * handles tokens — the `code` is exchanged on the backend in the callback (§7.3).
+ * Generates the provider authorization URL and persists the CSRF `state`
+ * server-side as an httpOnly cookie. For PKCE providers (e.g. Gmail) the
+ * `codeVerifier` cookie is also set. Non-PKCE providers (e.g. Slack) do NOT
+ * use a verifier cookie.
+ *
+ * The route dispatches through the provider registry (providers/registry.ts)
+ * instead of hardcoding Gmail — adding a new provider only requires registering
+ * it in the registry.
  *
  * force-dynamic: this route must run per-request (it generates random state and
  * sets cookies); it must never be statically evaluated at build time.
@@ -15,14 +19,11 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { createAuthorizationURL } from "@/providers/gmail";
+import { getProvider } from "@/providers/registry";
 
 // Cookie lifetime for the in-flight OAuth handshake. Short — the user should
 // complete consent within a few minutes; stale state must not linger (§7.6).
 const OAUTH_COOKIE_MAX_AGE_SECONDS = 600; // 10 minutes
-
-// Only Gmail is supported at M1. Other providers (Slack, ...) come later.
-const SUPPORTED_PROVIDERS = new Set(["gmail"]);
 
 export async function GET(
   req: NextRequest,
@@ -30,7 +31,9 @@ export async function GET(
 ) {
   const { provider } = params;
 
-  if (!SUPPORTED_PROVIDERS.has(provider)) {
+  // Dispatch through registry — unknown providers return undefined → 400.
+  const providerEntry = getProvider(provider);
+  if (!providerEntry) {
     return NextResponse.json(
       { error: `Unsupported provider: ${provider}` },
       { status: 400 }
@@ -47,13 +50,13 @@ export async function GET(
 
   let authUrl: URL;
   let state: string;
-  let codeVerifier: string;
+  let codeVerifier: string | undefined;
   try {
-    ({ url: authUrl, state, codeVerifier } = createAuthorizationURL());
+    ({ url: authUrl, state, codeVerifier } = providerEntry.createAuthorizationURL());
   } catch (err) {
-    // Misconfiguration (e.g. missing GOOGLE_OAUTH_* / APP_BASE_URL env vars).
-    // Never include the error detail in the client response — it may name secrets.
-    console.error("[oauth/connect] failed to build authorization URL:", err);
+    // Misconfiguration (e.g. missing env vars for this provider).
+    // Never include error detail in the client response — it may expose config secrets.
+    console.error(`[oauth/connect] failed to build authorization URL for ${provider}:`, err);
     return NextResponse.json(
       { error: "OAuth is not configured. Please contact support." },
       { status: 500 }
@@ -72,9 +75,16 @@ export async function GET(
     maxAge: OAUTH_COOKIE_MAX_AGE_SECONDS,
   };
 
-  // Namespaced per provider so concurrent connects don't collide.
+  // Namespaced per provider so concurrent connects for different providers
+  // don't collide.
   res.cookies.set(`oauth_state_${provider}`, state, cookieOptions);
-  res.cookies.set(`oauth_verifier_${provider}`, codeVerifier, cookieOptions);
+
+  // Only set the verifier cookie for PKCE providers (e.g. Gmail).
+  // Non-PKCE providers (e.g. Slack) do not use a verifier.
+  if (providerEntry.usesPKCE && codeVerifier) {
+    res.cookies.set(`oauth_verifier_${provider}`, codeVerifier, cookieOptions);
+  }
+
   res.cookies.set(`oauth_client_${provider}`, clientId, cookieOptions);
 
   return res;

@@ -1,10 +1,13 @@
 /**
- * app/onboarding/[clientId]/page.tsx — Client onboarding page (M1).
+ * app/onboarding/[clientId]/page.tsx — Client onboarding page (M4 polish).
  *
  * This is the ONLY surface the client ever sees (§6.6).
- * It renders a "Connect Gmail" button that navigates the browser to the backend
- * OAuth route. The browser never handles tokens or the `code` exchange — those
- * stay entirely on the backend (frontend agent hard rule, §7.3).
+ * It renders "Connect [Provider]" buttons for exactly the providers the
+ * client's automations need (derived from automation config.requiredProviders,
+ * falling back to ["gmail"] if none are specified).
+ *
+ * The browser navigates to backend OAuth routes — the frontend never handles
+ * tokens or the `code` exchange (frontend agent hard rule, §7.3).
  *
  * Safe fields only: we select id, name, status from Client and
  * id, provider, status from Connection — NEVER token fields (§7.2).
@@ -27,13 +30,14 @@ interface PageProps {
   searchParams: { connected?: string; error?: string };
 }
 
-// The only providers required at M1.
-const REQUIRED_PROVIDERS = ["gmail"] as const;
-type RequiredProvider = (typeof REQUIRED_PROVIDERS)[number];
-
-const PROVIDER_LABELS: Record<RequiredProvider, string> = {
+// All providers the platform supports (must be registered in providers/registry.ts).
+const ALL_PROVIDER_LABELS: Record<string, string> = {
   gmail: "Gmail",
+  slack: "Slack",
 };
+
+// Fallback when no automation specifies requiredProviders.
+const DEFAULT_PROVIDERS = ["gmail"];
 
 // ---------------------------------------------------------------------------
 // Data loading (server-side only)
@@ -53,9 +57,40 @@ async function getClientData(clientId: string) {
           status: true,
         },
       },
+      automations: {
+        select: {
+          // config is a Json column — cast to unknown, extract requiredProviders
+          config: true,
+        },
+      },
     },
   });
   return client;
+}
+
+/**
+ * Derive the ordered list of providers needed for this client by inspecting
+ * each automation's config.requiredProviders (string[]).
+ * If no automation specifies providers, fall back to DEFAULT_PROVIDERS.
+ */
+function deriveRequiredProviders(
+  automations: Array<{ config: unknown }>
+): string[] {
+  const found = new Set<string>();
+  for (const automation of automations) {
+    const cfg = automation.config as Record<string, unknown> | null;
+    if (
+      cfg &&
+      Array.isArray(cfg.requiredProviders) &&
+      cfg.requiredProviders.length > 0
+    ) {
+      for (const p of cfg.requiredProviders) {
+        if (typeof p === "string") found.add(p);
+      }
+    }
+  }
+  if (found.size === 0) return DEFAULT_PROVIDERS;
+  return Array.from(found);
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +128,36 @@ function GmailIcon() {
   );
 }
 
+function SlackIcon() {
+  // Inline SVG — Slack brand mark, simplified for 20×20.
+  return (
+    <svg
+      className={styles.providerIcon}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="20" height="20" rx="3" fill="#4A154B" opacity="0.1" />
+      {/* Slack hash mark — four rounded bars */}
+      <rect x="7.5" y="3.5" width="2" height="6" rx="1" fill="#4A154B" />
+      <rect x="10.5" y="3.5" width="2" height="6" rx="1" fill="#4A154B" />
+      <rect x="3.5" y="7.5" width="6" height="2" rx="1" fill="#4A154B" />
+      <rect x="3.5" y="10.5" width="6" height="2" rx="1" fill="#4A154B" />
+      <rect x="7.5" y="10.5" width="2" height="6" rx="1" fill="#4A154B" />
+      <rect x="10.5" y="10.5" width="2" height="6" rx="1" fill="#4A154B" />
+      <rect x="10.5" y="7.5" width="6" height="2" rx="1" fill="#4A154B" />
+      <rect x="10.5" y="10.5" width="6" height="2" rx="1" fill="#4A154B" />
+    </svg>
+  );
+}
+
+function ProviderIcon({ provider }: { provider: string }) {
+  if (provider === "gmail") return <GmailIcon />;
+  if (provider === "slack") return <SlackIcon />;
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -121,6 +186,9 @@ export default async function OnboardingPage({
     );
   }
 
+  // Derive which providers this client needs from their automation configs.
+  const requiredProviders = deriveRequiredProviders(client.automations);
+
   // Build a Set of providers the client already has an active Connection for.
   const activeProviders = new Set(
     client.connections
@@ -128,7 +196,7 @@ export default async function OnboardingPage({
       .map((c) => c.provider as string)
   );
 
-  const allConnected = REQUIRED_PROVIDERS.every((p) => activeProviders.has(p));
+  const allConnected = requiredProviders.every((p) => activeProviders.has(p));
 
   // Derive banner content from search params returned by the OAuth callback.
   // The backend redirects to this page with ?connected=gmail on success
@@ -158,9 +226,8 @@ export default async function OnboardingPage({
           >
             <span aria-hidden="true">&#10003;</span>
             <span>
-              {PROVIDER_LABELS[connectedParam as RequiredProvider] ??
-                connectedParam}{" "}
-              connected successfully.
+              {ALL_PROVIDER_LABELS[connectedParam] ?? connectedParam} connected
+              successfully.
             </span>
           </div>
         )}
@@ -178,10 +245,11 @@ export default async function OnboardingPage({
           </div>
         )}
 
-        {/* Connection list */}
+        {/* Connection list — one row per required provider */}
         <ul className={styles.connectionList} aria-label="Required connections">
-          {REQUIRED_PROVIDERS.map((provider) => {
+          {requiredProviders.map((provider) => {
             const isConnected = activeProviders.has(provider);
+            const label = ALL_PROVIDER_LABELS[provider] ?? provider;
             // OAuth is kicked off by navigating the browser to the backend route.
             // The frontend never receives, stores, or exchanges the OAuth code — §7.
             const connectHref = `/oauth/connect/${provider}?clientId=${client.id}`;
@@ -189,8 +257,8 @@ export default async function OnboardingPage({
             return (
               <li key={provider} className={styles.connectionRow}>
                 <span className={styles.providerLabel}>
-                  {provider === "gmail" && <GmailIcon />}
-                  {PROVIDER_LABELS[provider]}
+                  <ProviderIcon provider={provider} />
+                  {label}
                 </span>
 
                 {isConnected ? (
@@ -201,9 +269,9 @@ export default async function OnboardingPage({
                   <a
                     href={connectHref}
                     className={styles.connectButton}
-                    aria-label={`Connect ${PROVIDER_LABELS[provider]}`}
+                    aria-label={`Connect ${label}`}
                   >
-                    Connect {PROVIDER_LABELS[provider]}
+                    Connect {label}
                   </a>
                 )}
               </li>
