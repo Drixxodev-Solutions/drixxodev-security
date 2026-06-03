@@ -11,6 +11,7 @@
     "db:generate": "prisma generate",
     "worker": "tsx worker/index.ts",
     "add-automation": "tsx scripts/add-automation.ts",
+    "triage:demo": "tsx scripts/triage-demo.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
