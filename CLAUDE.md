@@ -3,6 +3,7 @@
 > Shared constitution for every agent on this project. Read this fully before writing any code.
 > Owner: [Your Company, LLC]. Replace bracketed placeholders before building.
 > Role-specific instructions live in `.claude/agents/` (Claude Code) and `.cursor/rules/` (Cursor). This file holds only the rules that apply to *everyone*.
+> For the day-to-day "how do I onboard a client and run automations" walkthrough, see [OPERATING.md](OPERATING.md).
 
 ---
 
