@@ -14,6 +14,12 @@
  * client components except the public NEXT_PUBLIC_ publishable key
  * which is safe to expose (it is not a secret — it identifies the
  * Clerk frontend API instance).
+ *
+ * NOTE: This layout must NOT render <html>/<body>. The root layout
+ * (app/layout.tsx) already provides them; rendering them again here
+ * produced nested <html>/<body> (invalid markup). We render only the
+ * ClerkProvider + operator chrome and let the root layout own the
+ * document shell.
  */
 
 import Link from "next/link";
@@ -31,27 +37,23 @@ export default function OperatorLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body>
-          <header className={styles.header}>
-            <div className={styles.headerLeft}>
-              <Link href="/dashboard" className={styles.appName}>
-                Drixxodev
-              </Link>
-              <nav className={styles.nav}>
-                <Link href="/dashboard" className={styles.navLink}>
-                  Clients
-                </Link>
-                <Link href="/dashboard/clients/new" className={styles.navLink}>
-                  New client
-                </Link>
-              </nav>
-            </div>
-            <UserButton afterSignOutUrl="/sign-in" />
-          </header>
-          <main className={styles.main}>{children}</main>
-        </body>
-      </html>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <Link href="/dashboard" className={styles.appName}>
+            Drixxodev
+          </Link>
+          <nav className={styles.nav}>
+            <Link href="/dashboard" className={styles.navLink}>
+              Clients
+            </Link>
+            <Link href="/dashboard/clients/new" className={styles.navLink}>
+              New client
+            </Link>
+          </nav>
+        </div>
+        <UserButton afterSignOutUrl="/sign-in" />
+      </header>
+      <main className={styles.main}>{children}</main>
     </ClerkProvider>
   );
 }
