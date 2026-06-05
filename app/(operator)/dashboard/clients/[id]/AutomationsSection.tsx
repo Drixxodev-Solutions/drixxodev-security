@@ -28,6 +28,12 @@ const AUTOMATION_TYPES: Array<{ value: string; label: string; description: strin
     description:
       "Polls Gmail, classifies new emails, applies labels, and drafts replies for high-urgency messages.",
   },
+  {
+    value: "meeting_prep",
+    label: "Meeting prep",
+    description:
+      "Reads upcoming Google Calendar events and writes AI-generated prep notes (agenda, talking points, questions) onto each event.",
+  },
 ];
 
 export interface AutomationView {

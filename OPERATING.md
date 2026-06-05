@@ -63,9 +63,13 @@ connections, and automations are ready. Fix any ✗ items first.
 
 ### Step 2 — Add an automation to them
 On the client's page, scroll to **Automations** → **"+ Add automation"**:
-- **Type:** Email triage (the only type right now)
+- **Type:** Email triage (Gmail) **or** Meeting prep (Google Calendar)
 - **Poll every:** how often to check, in minutes (default 5; minimum 1)
 - Save.
+
+The provider the client must connect is derived from the automation type, so the
+onboarding link (Step 3) automatically shows the right **Connect** button —
+Gmail for email triage, Google Calendar for meeting prep.
 
 *(Prefer the terminal? Same thing: `npm run add-automation -- --client their@email.com`)*
 
@@ -101,6 +105,21 @@ Results show up in **two places**: the client's **Gmail** (labels + drafts) and 
 > Note: if the inbox has no new unread mail, the worker prints nothing and does
 > nothing — that silence is normal, not a bug.
 
+## 4b. What the Meeting prep automation actually does
+
+Every time it polls, for each **upcoming** Google Calendar event in the next
+~48 hours that it hasn't prepped yet, it:
+- reads the event (title, attendees, any existing agenda),
+- asks the LLM for **prep notes** (a short summary, an agenda, talking points,
+  and questions to ask), and
+- writes those notes onto the **event's description** and stamps a hidden marker
+  so the same event is never prepped twice.
+
+Results show up in the client's **Google Calendar** (open the event → the prep
+notes are appended to the description) and in your **dashboard** under the
+client's **Recent runs**. Low-value events (a solo "Focus" block with no
+attendees or agenda) are skipped before any LLM call to save cost.
+
 ---
 
 ## 5. Day to day
@@ -133,7 +152,8 @@ is set up.
 - **It's all on `localhost` right now.** The onboarding link only works on your own
   machine, so you can't send it to a real client yet. Putting the app on a real web
   address (deployment) is a later milestone — see §9 (M3/M4) in `CLAUDE.md`.
-- **One automation type so far:** Email triage. More types come later (M4).
+- **Two automation types so far:** Email triage (Gmail) and Meeting prep
+  (Google Calendar). More types come later (M4).
 - **One shared LLM key:** if the AI provider is down or rate-limited, every client
   is affected at once. Failover/limits are part of the guardrails milestone.
 

@@ -34,6 +34,7 @@ interface PageProps {
 const ALL_PROVIDER_LABELS: Record<string, string> = {
   gmail: "Gmail",
   slack: "Slack",
+  gcal: "Google Calendar",
 };
 
 // Fallback when no automation specifies requiredProviders.
@@ -152,9 +153,36 @@ function SlackIcon() {
   );
 }
 
+function GcalIcon() {
+  // Inline SVG — simplified Google Calendar mark, 20×20.
+  return (
+    <svg
+      className={styles.providerIcon}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="3" y="4" width="14" height="13" rx="2" fill="#4285F4" opacity="0.12" />
+      <rect
+        x="3"
+        y="4"
+        width="14"
+        height="13"
+        rx="2"
+        stroke="#4285F4"
+        strokeWidth="1.4"
+      />
+      <path d="M3 8h14" stroke="#4285F4" strokeWidth="1.4" />
+      <path d="M7 3v3M13 3v3" stroke="#4285F4" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function ProviderIcon({ provider }: { provider: string }) {
   if (provider === "gmail") return <GmailIcon />;
   if (provider === "slack") return <SlackIcon />;
+  if (provider === "gcal") return <GcalIcon />;
   return null;
 }
 

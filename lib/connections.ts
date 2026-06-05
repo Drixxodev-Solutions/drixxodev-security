@@ -19,13 +19,14 @@
 import { prisma } from "@/lib/db";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { refreshAccessToken as refreshGmailToken } from "@/providers/gmail";
+import { refreshAccessToken as refreshGcalToken } from "@/providers/gcal";
 import { ConnectionProvider } from "@prisma/client";
 
 // Refresh slightly before actual expiry to avoid races where a token expires
 // mid-request.
 const EXPIRY_SKEW_MS = 60_000; // 60 seconds
 
-export type ProviderName = "gmail" | "slack";
+export type ProviderName = "gmail" | "slack" | "gcal";
 
 // Per-provider refresh dispatch.
 // Slack is intentionally absent: its bot tokens do not expire/rotate.
@@ -44,11 +45,14 @@ const REFRESHERS: Partial<
   >
 > = {
   gmail: refreshGmailToken,
+  // Google Calendar issues short-lived access tokens like Gmail; refresh via Google.
+  gcal: refreshGcalToken,
 };
 
 const PROVIDER_ENUM: Record<ProviderName, ConnectionProvider> = {
   gmail: ConnectionProvider.gmail,
   slack: ConnectionProvider.slack,
+  gcal: ConnectionProvider.gcal,
 };
 
 /**

@@ -23,6 +23,7 @@ enum ClientStatus {
 enum ConnectionProvider {
   gmail
   slack
+  gcal
 }
 
 enum ConnectionStatus {
@@ -33,6 +34,7 @@ enum ConnectionStatus {
 
 enum AutomationType {
   email_triage
+  meeting_prep
 }
 
 enum RunStatus {
