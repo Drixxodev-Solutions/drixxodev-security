@@ -39,6 +39,12 @@ import {
   exchangeCode as slackExchangeCode,
   SLACK_SCOPES,
 } from "@/providers/slack";
+import {
+  createAuthorizationURL as gcalCreateAuthURL,
+  exchangeCode as gcalExchangeCode,
+  refreshAccessToken as gcalRefreshToken,
+  GCAL_SCOPES,
+} from "@/providers/gcal";
 
 // ---------------------------------------------------------------------------
 // Shared token result type
@@ -171,12 +177,47 @@ const slackEntry: ProviderEntry = {
 };
 
 // ---------------------------------------------------------------------------
+// Google Calendar entry
+// ---------------------------------------------------------------------------
+
+const gcalEntry: ProviderEntry = {
+  name: "gcal",
+  enum: ConnectionProvider.gcal,
+  usesPKCE: true,
+  scopes: GCAL_SCOPES,
+
+  createAuthorizationURL() {
+    // Google Calendar uses PKCE just like Gmail: state + verifier are returned.
+    const { url, state, codeVerifier } = gcalCreateAuthURL();
+    return { url, state, codeVerifier };
+  },
+
+  async exchangeCode(code: string, codeVerifier?: string): Promise<TokenResult> {
+    if (!codeVerifier) {
+      throw new Error("[registry/gcal] codeVerifier is required for Google Calendar (PKCE).");
+    }
+    const result = await gcalExchangeCode(code, codeVerifier);
+    return {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      expiresAt: result.expiresAt,
+      scopes: result.scopes,
+    };
+  },
+
+  async refreshAccessToken(refreshToken: string) {
+    return gcalRefreshToken(refreshToken);
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Registry map
 // ---------------------------------------------------------------------------
 
 const REGISTRY: ReadonlyMap<string, ProviderEntry> = new Map([
   ["gmail", gmailEntry],
   ["slack", slackEntry],
+  ["gcal", gcalEntry],
 ]);
 
 // ---------------------------------------------------------------------------

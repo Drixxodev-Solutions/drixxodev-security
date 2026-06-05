@@ -65,7 +65,8 @@ async function main() {
     check("fail", "APP_BASE_URL", "missing");
   } else {
     check("ok", "APP_BASE_URL", base);
-    lines.push(`      Google redirect URI must be: ${base}/oauth/callback/gmail`);
+    lines.push(`      Google redirect URIs must be: ${base}/oauth/callback/gmail`);
+    lines.push(`                              and: ${base}/oauth/callback/gcal`);
   }
 
   // ---- 2. Database ------------------------------------------------------

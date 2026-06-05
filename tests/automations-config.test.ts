@@ -24,6 +24,8 @@ describe("isValidAutomationType", () => {
   it("accepts a supported type", () => {
     expect(isValidAutomationType("email_triage")).toBe(true);
     expect(isValidAutomationType(AutomationType.email_triage)).toBe(true);
+    expect(isValidAutomationType("meeting_prep")).toBe(true);
+    expect(isValidAutomationType(AutomationType.meeting_prep)).toBe(true);
   });
 
   it("rejects unknown or non-string values", () => {
@@ -100,5 +102,26 @@ describe("buildAutomationConfig", () => {
     expect(() =>
       buildAutomationConfig(AutomationType.email_triage, "nope")
     ).toThrow();
+  });
+
+  it("returns safe defaults for meeting_prep", () => {
+    const cfg = buildAutomationConfig(AutomationType.meeting_prep, undefined);
+    expect(cfg).toMatchObject({
+      requiredProviders: ["gcal"],
+      calendarId: "primary",
+      lookaheadHours: 48,
+      maxPerPoll: 10,
+    });
+  });
+
+  it("merges overrides but forces meeting_prep requiredProviders to gcal", () => {
+    const cfg = buildAutomationConfig(AutomationType.meeting_prep, {
+      lookaheadHours: 24,
+      requiredProviders: ["gmail", "evil"],
+    });
+    expect(cfg.lookaheadHours).toBe(24);
+    expect(cfg.requiredProviders).toEqual(["gcal"]);
+    // untouched default preserved
+    expect(cfg.calendarId).toBe("primary");
   });
 });

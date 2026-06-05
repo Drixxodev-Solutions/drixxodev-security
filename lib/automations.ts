@@ -32,6 +32,12 @@ export const AUTOMATION_TYPE_META: Record<
       "Polls the client's Gmail, classifies each new email (category + urgency), applies labels, and drafts replies for high-urgency messages.",
     requiredProviders: ["gmail"],
   },
+  [AutomationType.meeting_prep]: {
+    label: "Meeting prep",
+    description:
+      "Reads the client's upcoming Google Calendar events and writes AI-generated prep notes (agenda, talking points, questions) onto each event.",
+    requiredProviders: ["gcal"],
+  },
 };
 
 /**
@@ -48,6 +54,13 @@ function defaultConfigFor(type: AutomationType): Prisma.JsonObject {
         maxPerPoll: 10,
         labelPrefix: "Triage",
         createDrafts: true,
+      };
+    case AutomationType.meeting_prep:
+      return {
+        requiredProviders: AUTOMATION_TYPE_META[type].requiredProviders,
+        calendarId: "primary",
+        lookaheadHours: 48,
+        maxPerPoll: 10,
       };
     default:
       // Exhaustiveness guard — adding a new AutomationType forces a default here.

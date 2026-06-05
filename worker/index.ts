@@ -5,7 +5,8 @@
  *   npm run worker
  *
  * Responsibilities:
- *   - On each tick, load all enabled email_triage automations with their client
+ *   - On each tick, load all enabled automations (any type) with their client
+ *   - Dispatch each to its runner via the automation registry (automations/registry.ts)
  *   - Skip paused clients (kill switch §6.5) — no polling, no LLM
  *   - For each automation whose pollInterval has elapsed, run poll() → process()
  *   - Resilient: one automation/client failing must NOT crash the loop
@@ -21,9 +22,8 @@
  */
 
 import { prisma } from "@/lib/db";
-import { poll, processItem } from "@/automations/email_triage/index";
-import type { EmailTriageConfig } from "@/automations/email_triage/index";
-import type { Client } from "@prisma/client";
+import { getAutomationRunner } from "@/automations/registry";
+import type { Client, AutomationType } from "@prisma/client";
 import { notifyOperator } from "@/lib/alerts";
 
 // ---------------------------------------------------------------------------
@@ -150,9 +150,12 @@ async function tick(): Promise<void> {
   // Daily spend alert check (§6.5, M3) — runs once per tick, deduped per UTC day
   await checkDailySpend();
 
-  // Load all enabled email_triage automations along with their client
+  // Load ALL enabled automations (any type) along with their client. The
+  // runner for each type is resolved via the automation registry below, so the
+  // worker no longer hardcodes a single type.
   let automations: Array<{
     id: string;
+    type: AutomationType;
     clientId: string;
     config: unknown;
     pollInterval: number;
@@ -162,7 +165,6 @@ async function tick(): Promise<void> {
   try {
     automations = await prisma.automation.findMany({
       where: {
-        type: "email_triage",
         enabled: true,
       },
       include: { client: true },
@@ -193,7 +195,12 @@ async function tick(): Promise<void> {
 
     // One automation failing must not crash the loop (§6.4)
     try {
-      await runAutomation(automation.client, automation.id, automation.config);
+      await runAutomation(
+        automation.type,
+        automation.client,
+        automation.id,
+        automation.config
+      );
     } catch (err) {
       // Any unhandled error from runAutomation is caught here as a safety net.
       // Individual item failures are recorded on Run rows inside process().
@@ -206,18 +213,27 @@ async function tick(): Promise<void> {
 }
 
 async function runAutomation(
+  type: AutomationType,
   client: Client,
   automationId: string,
   rawConfig: unknown
 ): Promise<void> {
-  const config = (rawConfig ?? {}) as EmailTriageConfig;
+  // Resolve the runner for this automation type. An unregistered type (enum
+  // value in the DB with no module wired up) is logged and skipped, not fatal.
+  const runner = getAutomationRunner(type);
+  if (!runner) {
+    console.error(
+      `[worker] no runner registered for automation type '${type}' (automation=${automationId}); skipping`
+    );
+    return;
+  }
 
   console.log(
-    `[worker] polling automation=${automationId} client=${client.id} (${client.name})`
+    `[worker] polling automation=${automationId} type=${type} client=${client.id} (${client.name})`
   );
 
   // poll() handles its own errors and returns [] on failure
-  const items = await poll(client, config);
+  const items = await runner.poll(client, rawConfig);
 
   if (items.length === 0) {
     return;
@@ -227,10 +243,9 @@ async function runAutomation(
 
   for (const item of items) {
     if (shuttingDown) break;
-    // Attach the automationId (poll() doesn't know it)
-    item.automationId = automationId;
-    // process() handles its own try/catch and records Run on failure
-    await processItem(item, { automationId });
+    // processItem() handles its own try/catch and records the Run on failure.
+    // automationId travels via the context, not by mutating the item.
+    await runner.processItem(item, { automationId });
   }
 }
 
